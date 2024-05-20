@@ -3,6 +3,7 @@
 import time
 
 from .inventory_client import InventoryClient
+from .payment_client import PaymentClient
 
 
 def confirm_order(order: dict, inventory: InventoryClient) -> dict:
@@ -17,3 +18,8 @@ def confirm_order(order: dict, inventory: InventoryClient) -> dict:
     order["reservation"] = confirmed
     order["status"] = "confirmed"
     return order
+
+
+def capture_payment(order: dict, payments: PaymentClient) -> dict:
+    """注文金額を決済する。"""
+    return payments.capture(order["id"], order["amount"])
