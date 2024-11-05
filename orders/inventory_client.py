@@ -1,8 +1,11 @@
-"""在庫サービス (inventory API) クライアント。"""
+"""在庫サービス (inventory API) クライアント。
+
+v2 は書き込み直後の読み取り整合（read-your-writes）を保証する。
+"""
 
 import httpx
 
-BASE_URL = "https://inventory.internal.example.com/api/v1"
+BASE_URL = "https://inventory.internal.example.com/api/v2"
 
 
 class InventoryClient:
