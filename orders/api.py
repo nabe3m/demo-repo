@@ -3,7 +3,7 @@
 import time
 
 from .inventory_client import InventoryClient
-from .payment_client import PaymentClient
+from .payment_client import PaymentClient, RateLimitedError
 
 
 def confirm_order(order: dict, inventory: InventoryClient) -> dict:
@@ -22,4 +22,13 @@ def confirm_order(order: dict, inventory: InventoryClient) -> dict:
 
 def capture_payment(order: dict, payments: PaymentClient) -> dict:
     """注文金額を決済する。"""
-    return payments.capture(order["id"], order["amount"])
+    # payment API は現行プランのレート制限 (60 req/min) があり、ピーク時に
+    # 429 を返す (#9)。プロバイダは増枠予定なしのため、指数バックオフで凌ぐ。
+    for attempt in range(3):
+        try:
+            return payments.capture(order["id"], order["amount"])
+        except RateLimitedError:
+            if attempt == 2:
+                raise
+            time.sleep(2 ** attempt)
+    raise RuntimeError("unreachable")
